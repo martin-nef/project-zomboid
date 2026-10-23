@@ -40,6 +40,16 @@ ZombieBuddy prompts before loading a new or changed Java mod JAR. The server's s
 answered "no". Signed JARs from authors in `ZB_TRUSTED_AUTHORS` (kolpaque for pz3d, Zed for ZombieBuddy) load without
 a prompt, so pz3d's frequent updates need no manual approval. Adding another Java mod means adding its author there.
 
+## Joining
+
+- Connect to the same public address as the Valheim/RuneScape servers, port 16261. The join password is
+  `SERVER_PASSWORD` in `sops -d deploy/secrets.yaml`.
+- Players need ZombieBuddy installed as a Java agent on their own machine, not just subscribed. On Windows that's the
+  [installer](https://github.com/zed-0xff/ZombieBuddy/releases); on Linux, copy `ZombieBuddy.jar` into the game folder and
+  use the launch option `-javaagent:ZombieBuddy.jar --`. See https://pz3d.dev/install/.
+- The server lists ZombieBuddy and pz3d as Workshop items, so joining subscribes players to the same versions the server
+  runs. Their game must be on the same branch as `STEAM_BRANCH` (normally the default, `public`).
+
 ## Console
 
     kubectl -n project-zomboid exec project-zomboid-0 -c server -- sh -c '/data/tools/rcon -a 127.0.0.1:27015 -p "$RCON_PASSWORD" players'

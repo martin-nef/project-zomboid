@@ -67,9 +67,11 @@ spec:
               containerPort: 16262
               protocol: UDP
           resources:
+            # Measured idle with no players: ~6.8 GB, of which the 5g heap is
+            # ~5.6 GB (ZGC maps it as shared memory, so it can't be reclaimed).
             requests:
               cpu: 500m
-              memory: 4Gi
+              memory: 7Gi
             limits:
               # JAVA_XMX (config.env) plus room for the JVM's off-heap memory.
               memory: 8Gi
