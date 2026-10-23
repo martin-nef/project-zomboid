@@ -98,7 +98,7 @@ spec:
             timeoutSeconds: 25
             failureThreshold: 5
           # RCON only comes up once the world is loaded, after steamcmd, the
-          # Workshop downloads (pz3d is ~400 MB) and, the first time, worldgen.
+          # Workshop downloads and, the first time, worldgen.
           startupProbe:
             exec:
               command:

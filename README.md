@@ -1,6 +1,6 @@
 # Project Zomboid server
 
-Dedicated Project Zomboid (Build 42) server with the [pz3d](https://steamcommunity.com/sharedfiles/filedetails/?id=3807334881)
+Dedicated Project Zomboid (Build 42) server with the [Project Viewpoint](https://steamcommunity.com/sharedfiles/filedetails/?id=3809306528)
 mod, on Kubernetes in namespace `project-zomboid`. Flux reconciles `deploy/`.
 Change things through git, not `kubectl edit`.
 
@@ -15,7 +15,7 @@ Editing any of these rolls the pod (hashed ConfigMap names).
 StatefulSet `project-zomboid` on shitbox, everything as uid 1000 with no privilege escalation:
 
 - `tools` init container: fetches `jq`, `rcon` and the ZombieBuddy agent jar into the PVC, pinned by SHA-256.
-- `server`: `scripts/start.sh` runs `steamcmd app_update 380870`, seeds ZombieBuddy (pz3d's Java loader) and its
+- `server`: `scripts/start.sh` runs `steamcmd app_update 380870`, seeds ZombieBuddy (Viewpoint's Java loader) and its
   trusted-author list, applies `server.ini`, then starts the server with `-javaagent:ZombieBuddy.jar`.
 - `updater` sidecar: `scripts/updater.sh` checks every 10 min for a newer server build on the branch, or a
   Workshop item updated since the server started. It warns players over RCON, saves, and quits. The container restart
@@ -31,14 +31,18 @@ Ports: UDP 16261 (game) and 16262 (direct) through Traefik entrypoints `zomboid-
 ## Versions
 
 Players' clients follow the `public` branch, and PZ refuses a client whose version differs from the server's, so
-the server follows `public` too. If a game update breaks pz3d, set `STEAM_BRANCH` to the matching beta (e.g. `42.19`)
-and have everyone pick the same beta in Steam.
+the server follows `public` too. Viewpoint only accepts the game version it was built for (currently 42.21), so a game
+update breaks it until Viewpoint updates too. Until then, set `STEAM_BRANCH` to the matching beta (e.g. `42.21`) and have
+everyone pick the same beta in Steam.
 
 ## Java mods
 
 ZombieBuddy prompts before loading a new or changed Java mod JAR. The server's stdin is closed, so any prompt is
-answered "no". Signed JARs from authors in `ZB_TRUSTED_AUTHORS` (kolpaque for pz3d, Zed for ZombieBuddy) load without
-a prompt, so pz3d's frequent updates need no manual approval. Adding another Java mod means adding its author there.
+answered "no". Signed JARs from authors in `ZB_TRUSTED_AUTHORS` (Zed for ZombieBuddy) load without a prompt, so their
+updates need no manual approval. Adding another server-side Java mod means adding its author there.
+
+A dedicated server skips JARs under `media/java/client/`. Viewpoint's JAR is client-only, so the server only loads its
+Lua side and it needs no trust entry here.
 
 ## Joining
 
@@ -46,8 +50,10 @@ a prompt, so pz3d's frequent updates need no manual approval. Adding another Jav
   `SERVER_PASSWORD` in `sops -d deploy/secrets.yaml`.
 - Players need ZombieBuddy installed as a Java agent on their own machine, not just subscribed. On Windows that's the
   [installer](https://github.com/zed-0xff/ZombieBuddy/releases); on Linux, copy `ZombieBuddy.jar` into the game folder and
-  use the launch option `-javaagent:ZombieBuddy.jar --`. See https://pz3d.dev/install/.
-- The server lists ZombieBuddy and pz3d as Workshop items, so joining subscribes players to the same versions the server
+  use the launch option `-javaagent:ZombieBuddy.jar --`. See the [ZombieBuddy README](https://github.com/zed-0xff/ZombieBuddy).
+- Viewpoint's JAR is unsigned, so each player's ZombieBuddy asks them to approve it the first time, and again after
+  each Viewpoint update.
+- The server lists ZombieBuddy and Viewpoint as Workshop items, so joining subscribes players to the same versions the server
   runs. Their game must be on the same branch as `STEAM_BRANCH` (normally the default, `public`).
 
 ## Console
