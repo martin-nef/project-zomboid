@@ -9,6 +9,9 @@ Change things through git, not `kubectl edit`.
   update check timing.
 - `deploy/server.ini`: keys enforced in the server's ini on every start (ports, mods, Workshop items, maps). The mod
   lines are generated, see [Mods](#mods).
+- `deploy/sandbox.ini`: sandbox options set in `<server>_SandboxVars.lua` on every start (multi-hit, infection, ...);
+  options not listed keep the world's values.
+- `deploy/spawnregions.lua`: the towns new characters can spawn in (all of them, plus "Random").
 - `deploy/secrets.yaml`: join/admin/RCON passwords, SOPS-encrypted (`sops deploy/secrets.yaml`, key in the gitignored `age.agekey`).
 
 Editing any of these rolls the pod (hashed ConfigMap names).
