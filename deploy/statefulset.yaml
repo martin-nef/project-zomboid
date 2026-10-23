@@ -1,0 +1,187 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: project-zomboid
+  namespace: project-zomboid
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: project-zomboid
+  template:
+    metadata:
+      labels:
+        app: project-zomboid
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - shitbox
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      # Everything runs as the image's unprivileged steam user, with no way to
+      # gain privileges back (no setuid, no capabilities).
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # Long enough for the preStop save on a big world.
+      terminationGracePeriodSeconds: 120
+      initContainers:
+        - name: tools
+          image: alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc
+          command: ["/bin/sh", "/config/tools.sh"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /config
+      containers:
+        - name: server
+          image: cm2network/steamcmd:latest@sha256:45f6515d6c4dcde659c9ad6872bdbeacd1bf5c4e7f241829c4d2f28fb5eda581
+          command: ["/bin/bash", "/config/start.sh"]
+          ports:
+            - name: game
+              containerPort: 16261
+              protocol: UDP
+            - name: direct
+              containerPort: 16262
+              protocol: UDP
+          resources:
+            requests:
+              cpu: 500m
+              memory: 4Gi
+            limits:
+              # JAVA_XMX (config.env) plus room for the JVM's off-heap memory.
+              memory: 8Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - configMapRef:
+                name: config
+            - secretRef:
+                name: secret
+          # Hang detection. RCON commands are executed by the server's main
+          # loop, so an answer to "players" means the game is still ticking; a
+          # frozen or deadlocked server stops answering while the process
+          # stays up. Five missed minutes restarts the container.
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - timeout 20 /data/tools/rcon -a 127.0.0.1:27015 -p "$RCON_PASSWORD" players >/dev/null
+            periodSeconds: 60
+            timeoutSeconds: 25
+            failureThreshold: 5
+          # RCON only comes up once the world is loaded, after steamcmd, the
+          # Workshop downloads (pz3d is ~400 MB) and, the first time, worldgen.
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - timeout 20 /data/tools/rcon -a 127.0.0.1:27015 -p "$RCON_PASSWORD" players >/dev/null
+            periodSeconds: 30
+            timeoutSeconds: 25
+            failureThreshold: 120
+          # The server runs under start-server.sh, which doesn't pass SIGTERM
+          # on, so save and quit over RCON and wait for the game to exit.
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - bash
+                  - -c
+                  - >-
+                    r() { timeout 30 /data/tools/rcon -a 127.0.0.1:27015 -p "$RCON_PASSWORD" "$@"; };
+                    r save && r quit || exit 0;
+                    while grep -qs ProjectZomboid /proc/[0-9]*/comm; do sleep 1; done
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /config
+            # SteamCMD's depot manifest cache. To apply an update as a delta,
+            # steamcmd needs the installed build's manifest, and Steam won't
+            # re-send a superseded one to anonymous logins.
+            - name: data
+              mountPath: /home/steam/Steam
+              subPath: steam-home
+        - name: updater
+          image: cm2network/steamcmd:latest@sha256:45f6515d6c4dcde659c9ad6872bdbeacd1bf5c4e7f241829c4d2f28fb5eda581
+          command: ["/bin/bash", "/config/updater.sh"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          envFrom:
+            - configMapRef:
+                name: config
+            - secretRef:
+                name: secret
+          volumeMounts:
+            - name: data
+              mountPath: /data
+              readOnly: true
+            - name: scripts
+              mountPath: /config
+      volumes:
+        - name: scripts
+          configMap:
+            name: scripts
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "local-path"
+        resources:
+          requests:
+            storage: 30Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: project-zomboid
+  labels:
+    app: project-zomboid
+spec:
+  ports:
+    - port: 16261
+      name: game
+      protocol: UDP
+    - port: 16262
+      name: direct
+      protocol: UDP
+  clusterIP: None
+  selector:
+    app: project-zomboid

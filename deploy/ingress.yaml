@@ -1,0 +1,26 @@
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: game
+  namespace: project-zomboid
+spec:
+  entryPoints:
+    - zomboid-1
+  routes:
+    - services:
+        - name: server
+          port: 16261
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  name: direct
+  namespace: project-zomboid
+spec:
+  entryPoints:
+    - zomboid-2
+  routes:
+    - services:
+        - name: server
+          port: 16262

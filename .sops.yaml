@@ -2,3 +2,9 @@ creation_rules:
   - path_regex: .*secrets?.*\.ya?ml$
     encrypted_regex: ^(data|stringData)$
     age: age1v5wxvvthvn2axugenexml23swgadm9ztmm9yqw5ltha6yqc83ggq5n3w59
+  - path_regex: .*\.toml$
+    age: age1v5wxvvthvn2axugenexml23swgadm9ztmm9yqw5ltha6yqc83ggq5n3w59
+    input_type: binary
+  - path_regex: secret-key$
+    age: age1v5wxvvthvn2axugenexml23swgadm9ztmm9yqw5ltha6yqc83ggq5n3w59
+    input_type: binary

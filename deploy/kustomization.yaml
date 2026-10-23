@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: project-zomboid
+
+resources:
+  - namespace.yaml
+  - statefulset.yaml
+  - secrets.yaml
+  - ingress.yaml
+
+# Generated so the names get a content hash suffix: any edit to these files
+# changes the pod template and Flux rolls the pod.
+configMapGenerator:
+  - name: config
+    envs:
+      - config.env
+  - name: scripts
+    files:
+      - server.ini
+      - scripts/tools.sh
+      - scripts/start.sh
+      - scripts/updater.sh
