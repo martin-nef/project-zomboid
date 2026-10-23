@@ -33,6 +33,12 @@ fi
 if [ ! -f "$install/start-server.sh" ] || [ "${STEAM_VALIDATE:-0}" = 1 ]; then
   args+=(validate)
 fi
+# The server downloads Workshop items itself on boot, but the items with
+# approved Java mods have to be current before then so that the approvals
+# below match the JARs the server loads.
+for item in ${ZB_APPROVED_ITEMS:-}; do
+  args+=(+workshop_download_item 108600 "$item")
+done
 args+=(+quit)
 
 # steamcmd tends to fail its first run on a fresh home ("Missing configuration").
@@ -65,6 +71,34 @@ cfg="$zb/config.json"
 [ -s "$cfg" ] || echo '{}' >"$cfg"
 "$tools/jq" --argjson ids "[${ZB_TRUSTED_AUTHORS}]" '.trusted_authors = $ids' "$cfg" >"$cfg.tmp"
 mv "$cfg.tmp" "$cfg"
+
+# Approves the unsigned server-side JARs (anything under media/java/ except
+# client/) of the items in ZB_APPROVED_ITEMS, by the hash they have now.
+# ZombieBuddy matches stored decisions by JAR hash alone. Earlier entries for
+# the same mods (older versions) and any stored denial of these hashes are
+# replaced; everything else in the file is kept.
+ws="$install/steamapps/workshop/content/108600"
+approve=$(
+  for item in ${ZB_APPROVED_ITEMS:-}; do
+    find "$ws/$item/mods" -path '*/media/java/*' -name '*.jar' ! -path '*/media/java/client/*' 2>/dev/null || true
+  done | sort | while IFS= read -r jar; do
+    rel=${jar#"$ws/"}
+    log "approving Java mod ${rel}" >&2
+    # <hash> <mod folder>, from <item>/mods/<mod folder>/...
+    echo "$(sha256sum "$jar" | cut -d' ' -f1) $(echo "$rel" | cut -d/ -f3)"
+  done
+)
+approvals="$zb/mod_approvals.json"
+[ -s "$approvals" ] || echo '{"formatVersion": 2, "mods": []}' >"$approvals"
+"$tools/jq" --arg new "$approve" --arg now "$(date -u +%FT%TZ)" '
+  [$new | splits("\n") | select(. != "") | split(" ")
+    | {id: .[1], jar_hash: .[0], decision: true, time: $now}] as $add
+  | ($add | map(.id)) as $ids
+  | ($add | map(.jar_hash)) as $hashes
+  | .formatVersion = 2
+  | .mods = [(.mods // [])[] | select((.id as $i | $ids | index($i)) or (.jar_hash as $h | $hashes | index($h)) | not)] + $add
+' "$approvals" >"$approvals.tmp"
+mv "$approvals.tmp" "$approvals"
 
 # --- Server config ---------------------------------------------------------------
 
