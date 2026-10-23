@@ -20,7 +20,7 @@ Subscribe to it first: <https://steamcommunity.com/sharedfiles/filedetails/?id=3
 Start the game. If it worked, "ZombieBuddy vX.Y.Z loaded" shows in the top left.
 
 ## 3. Pre-download the mods (optional)
-Subscribe to the collection so you don't sit through the downloads when you join: <https://steamcommunity.com/sharedfiles/filedetails/?id=3820722411>
+Subscribe to the collection so you don't sit through the downloads when you join: <https://steamcommunity.com/sharedfiles/filedetails/?id=3825483274>
 
 ## 4. Join
 Multiplayer → Join → IP `zomboid.nefcloud.top`, port `16261`, plus the server password. Pick a username and password: your account is created on your first join, so remember them.
