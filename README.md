@@ -41,8 +41,9 @@ ZombieBuddy prompts before loading a new or changed Java mod JAR. The server's s
 answered "no". Signed JARs from authors in `ZB_TRUSTED_AUTHORS` (Zed for ZombieBuddy) load without a prompt, so their
 updates need no manual approval. Adding another server-side Java mod means adding its author there.
 
-A dedicated server skips JARs under `media/java/client/`. Viewpoint's JAR is client-only, so the server only loads its
-Lua side and it needs no trust entry here.
+Viewpoint's JAR is unsigned and client-only (`media/java/client/`), so the server denies it and loads only its Lua
+side, which is what we want. ZombieBuddy 2.3.4 still prompts for it; newer versions skip client JARs on a dedicated
+server.
 
 ## Joining
 
