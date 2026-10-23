@@ -3,7 +3,7 @@
 **Server:** `zomboid.nefcloud.top:16261`
 **Password:** ask the host
 
-It's a modded Build 42 server running **Project Viewpoint** (first and third person 3D). Viewpoint needs **ZombieBuddy**, a Java mod loader you install once.
+It's a modded Build 42 server running **Project Viewpoint** (first and third person 3D) and the **PZVP Dogs Pack** collection: about 200 mods, mostly Viewpoint add-ons, KI5 vehicles and UI/QoL. Viewpoint and its add-ons need **ZombieBuddy**, a Java mod loader you install once.
 
 ## 1. Game version
 Stay on the default branch, currently **42.21**: Steam → Project Zomboid → Properties → Betas → **None**.
@@ -19,13 +19,21 @@ Subscribe to it first: <https://steamcommunity.com/sharedfiles/filedetails/?id=3
 
 Start the game. If it worked, "ZombieBuddy vX.Y.Z loaded" shows in the top left.
 
-## 3. Pre-download the mods (optional)
-Subscribe to the collection so you don't sit through the downloads when you join: <https://steamcommunity.com/sharedfiles/filedetails/?id=3825483274>
+## 3. Pre-download the mods (recommended)
+The mods are about **3.6 GB**. Subscribe to the collection and let Steam finish downloading before you join, or the join screen downloads it all first: <https://steamcommunity.com/sharedfiles/filedetails/?id=3825483274>
+
+You don't need to enable the mods yourself: joining loads exactly the server's mod list.
 
 ## 4. Join
 Multiplayer → Join → IP `zomboid.nefcloud.top`, port `16261`, plus the server password. Pick a username and password: your account is created on your first join, so remember them.
 
-ZombieBuddy asks whether to load **Viewpoint.jar**. Click **Yes** and choose to remember it. It asks again after each Viewpoint update.
+ZombieBuddy asks whether to load the mods' Java files (around 30 of them: Viewpoint and its add-ons). Approve all of them and choose to remember the decision, or those features silently don't work. It asks again for each mod that updates. Holding **Shift** while the game starts reopens the approval window if you clicked No by mistake.
+
+The first load with this many mods takes a few minutes, and Rolling Hills takes a minute or so to generate terrain.
 
 ## Viewpoint controls
 **O** first person · **Shift+O** first ↔ third person · **Delete** settings · **Middle mouse** toggle cursor
+
+Advanced Movement moves some vanilla keys: **Q / E** lean (shout is now **N**, interact **F**, flashlight **Z**), **Space** jump/vault/climb (shove is now **Mouse 5**), double-tap **Shift** to sprint, hold **Crouch** to go prone. Rebind them under Options → Keybinds.
+
+For hills that match the server's vehicle physics, select the **Rolling Hills** terrain in Viewpoint's settings (Delete).
