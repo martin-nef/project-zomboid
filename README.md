@@ -46,6 +46,8 @@ Lua side and it needs no trust entry here.
 
 ## Joining
 
+[JOINING.md](JOINING.md) is the player-facing guide, written to paste into Discord.
+
 - Connect to the same public address as the Valheim/RuneScape servers, port 16261. The join password is
   `SERVER_PASSWORD` in `sops -d deploy/secrets.yaml`.
 - Players need ZombieBuddy installed as a Java agent on their own machine, not just subscribed. On Windows that's the
