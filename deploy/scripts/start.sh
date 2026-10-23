@@ -52,7 +52,7 @@ for attempt in 1 2 3; do
   sleep 10
 done
 
-# --- ZombieBuddy (Java agent that pz3d needs) -------------------------------------
+# --- ZombieBuddy (Java agent that Viewpoint needs) --------------------------------
 
 if [ ! -f "$zb/ZombieBuddy.jar" ]; then
   log "seeding ZombieBuddy.jar"
@@ -72,7 +72,7 @@ mkdir -p "$(dirname "$ini")"
 touch "$ini"
 
 # set_ini <key> <value>. Values go through the environment so awk doesn't
-# interpret backslashes (Mods=\pz3d) or anything in the passwords.
+# interpret backslashes (Mods=\Viewpoint) or anything in the passwords.
 set_ini() {
   K="$1" V="$2" awk '
     BEGIN { k = ENVIRON["K"]; v = ENVIRON["V"] }
