@@ -124,6 +124,44 @@ done </config/server.ini
 set_ini Password "$SERVER_PASSWORD"
 set_ini RCONPassword "$RCON_PASSWORD"
 
+# Sandbox options: <server>_SandboxVars.lua is a Lua table the server writes
+# out itself (with every option, mods' included) when it first creates the
+# world, and reads on every start. sandbox.ini sets single values in it:
+# "Key=value" for top-level options, "Table.Key=value" for ones nested one
+# level down (e.g. ZombieLore.Transmission). Before the file exists (first
+# boot) there is nothing to edit; the next start applies them.
+sandbox="$cachedir/Server/${SERVER_NAME}_SandboxVars.lua"
+set_sandbox() {
+  K="$1" V="$2" awk '
+    BEGIN {
+      n = split(ENVIRON["K"], p, ".")
+      tbl = n == 2 ? p[1] : ""; key = p[n]; v = ENVIRON["V"]
+      ind = n == 2 ? "        " : "    "
+    }
+    /^    [A-Za-z0-9_]+ = \{/ { cur = $1 }
+    /^    \},?$/ { cur = "" }
+    index($0, ind key " = ") == 1 && cur == tbl { print ind key " = " v ","; found = 1; next }
+    { print }
+    END { if (!found) exit 3 }
+  ' "$sandbox" >"$sandbox.tmp"
+}
+if [ -f "$sandbox" ]; then
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in '' | '#'*) continue ;; esac
+    if set_sandbox "${line%%=*}" "${line#*=}"; then
+      mv "$sandbox.tmp" "$sandbox"
+    else
+      rm -f "$sandbox.tmp"
+      log "sandbox option ${line%%=*} not found in $sandbox, skipped"
+    fi
+  done </config/sandbox.ini
+else
+  log "no $sandbox yet, sandbox.ini applies from the next start"
+fi
+
+# Where new characters can spawn. The server looks the file up by name.
+cp /config/spawnregions.lua "$cachedir/Server/${SERVER_NAME}_spawnregions.lua"
+
 # --- Run ---------------------------------------------------------------------
 
 # The updater compares Workshop update times against this.

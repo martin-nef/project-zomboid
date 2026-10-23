@@ -17,6 +17,8 @@ configMapGenerator:
   - name: scripts
     files:
       - server.ini
+      - sandbox.ini
+      - spawnregions.lua
       - scripts/tools.sh
       - scripts/start.sh
       - scripts/updater.sh
