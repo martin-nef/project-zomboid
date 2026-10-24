@@ -19,12 +19,15 @@ Subscribe to it first: <https://steamcommunity.com/sharedfiles/filedetails/?id=3
 
 Start the game. If it worked, "ZombieBuddy vX.Y.Z loaded" shows in the top left.
 
-## 3. Pre-download the mods (recommended)
+## 3. Give the game more memory
+The game's default 3 GB of memory isn't enough for this many mods. Open `SteamLibrary\steamapps\common\ProjectZomboid\ProjectZomboid64.json` in a text editor and change `-Xmx3072m` to `-Xmx8g` (this needs a PC with at least 16 GB of RAM; on Linux, the same file in the game folder). Change only that, and keep any ZombieBuddy line the installer added. A game update or Steam's "Verify integrity of game files" resets it, so check it again after one.
+
+## 4. Pre-download the mods (recommended)
 The mods are about **3.6 GB**. Subscribe to the collection and let Steam finish downloading before you join, or the join screen downloads it all first: <https://steamcommunity.com/sharedfiles/filedetails/?id=3825483274>
 
 You don't need to enable the mods yourself: joining loads exactly the server's mod list.
 
-## 4. Join
+## 5. Join
 Multiplayer → Join → IP `zomboid.nefcloud.top`, port `16261`, plus the server password. Pick a username and password: your account is created on your first join, so remember them.
 
 ZombieBuddy asks whether to load the mods' Java files (around 30 of them: Viewpoint and its add-ons). Approve all of them and choose to remember the decision, or those features silently don't work. It asks again for each mod that updates. Holding **Shift** while the game starts reopens the approval window if you clicked No by mistake.
